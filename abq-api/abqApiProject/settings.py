@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-6d0^#=uf2b&nhaizpe-34-cfbol4$1=1)7r14r6u%e!3uhw&@o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1', # Localhost
+    '.vercel.app', # Allow all vercel subdomains
+    'albuquerque-api-hugommbrito-hugommbritos-projects.vercel.app' # Specific vercel domain
+]
 
 
 # Application definition
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'landingPgApp',
 ]
 
 MIDDLEWARE = [
@@ -66,7 +71,9 @@ TEMPLATES = [
     },
 ]
 
+# Standard Django WSGI entrypoint
 WSGI_APPLICATION = 'abqApiProject.wsgi.application'
+ASGI_APPLICATION = 'abqApiProject.asgi.application'
 
 
 # Database
