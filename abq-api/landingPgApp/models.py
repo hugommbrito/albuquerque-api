@@ -10,6 +10,8 @@ from django.contrib.postgres.fields import ArrayField
 
 from storages.backends.s3boto3 import S3Boto3Storage
 
+from django_ckeditor_5.fields import CKEditor5Field
+
 
 def venture_image_upload_to(instance, filename):
   folder = 'venture_images'
@@ -21,6 +23,24 @@ def venture_image_upload_to(instance, filename):
     venture_id = getattr(venture, 'id', 'noid')
     venture_slug = slugify(getattr(venture, 'name', 'venture'))
     prefix = f"{venture_id}-{venture_slug}"
+  else:
+    prefix = 'item'
+
+  timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+  suffix = instance.pk or 'new'
+
+  return f"{folder}/{prefix}/{timestamp}_{suffix}{ext}"
+
+def blog_article_image_upload_to(instance, filename):
+  folder = 'blog_articles'
+  _, ext = os.path.splitext(filename)
+  ext = (ext or '').lower() or '.img'
+
+  article = getattr(instance, 'article', None)
+  if article is not None:
+    article_id = getattr(article, 'id', 'noid')
+    article_slug = slugify(getattr(article, 'title', 'article'))
+    prefix = f"{article_id}-{article_slug}"
   else:
     prefix = 'item'
 
@@ -41,6 +61,7 @@ class VentureStatus(models.Model):
 
   def __str__(self):
     return self.name
+  
   
 class VentureCategory(models.Model):
   name = models.CharField(max_length=50)
@@ -198,3 +219,36 @@ class VentureImages(models.Model):
   def __str__(self):
      return self.image.name
   
+
+class BlogArticle(models.Model):
+  title = models.CharField(max_length=200, verbose_name="Título")
+  short_description = models.CharField(max_length=300, verbose_name="Descrição Curta")
+  content = CKEditor5Field('Content', config_name='extends')
+  slug = models.SlugField(unique=True, verbose_name="Slug")
+  tag = models.ForeignKey('BlogTag', on_delete=models.SET_NULL, null=True, blank=True, related_name='articles', verbose_name="Tag")
+  cover_image = models.ImageField(storage=S3Boto3Storage(), upload_to=blog_article_image_upload_to, verbose_name="Imagem da Capa", null=True, blank=True)
+  is_highlight = models.BooleanField(default=False, verbose_name="Artigo em Destaque?")
+  is_active = models.BooleanField(default=True, verbose_name="Artigo Ativo?")
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  class Meta:
+    verbose_name = "Artigo do Blog"
+    verbose_name_plural = "Artigos do Blog"
+
+  def __str__(self):
+    return self.title
+  
+class BlogTag(models.Model):
+  name = models.CharField(max_length=50, verbose_name="Nome")
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  class Meta:
+    verbose_name = "Tag do Blog"
+    verbose_name_plural = "Tags do Blog"
+
+  def __str__(self):
+    return self.name

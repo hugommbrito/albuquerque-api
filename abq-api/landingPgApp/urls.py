@@ -10,4 +10,8 @@ urlpatterns = [
     path("venture/<slug:slug>",views.venture_detail_page,name="venture_detail_page_no_slash"),
     path("venture/", views.ventures_page, name="ventures_page"),
     path("venture", views.ventures_page, name="ventures_page_no_slash"),
+    path("blog/", views.BlogPage_details, name="blog_page_details"),
+    path("blog", views.BlogPage_details, name="blog_page_details_no_slash"),
+    path("blog/<slug:slug>/", views.BlogArticle_details, name="blog_article_detail_page"),
+    path("blog/<slug:slug>", views.BlogArticle_details, name="blog_article_detail_page_no_slash"),
 ]

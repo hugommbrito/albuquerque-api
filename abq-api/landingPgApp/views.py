@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 
-from .models import Venture, VentureCategory
+from .models import BlogArticle, Venture, VentureCategory
 
 
 def ventures_page(request):
@@ -125,3 +125,41 @@ def venture_detail_page(request, slug):
     }
 
     return JsonResponse(venturePageInfo)
+
+def BlogPage_details(request):
+    blogArticles = BlogArticle.objects.filter(is_active=True).order_by('-created_at')
+    data = {"highlighted_articles": [], "regular_articles": []}
+
+    for article in blogArticles:
+        articleData = {
+            "id": article.id,
+            "title": article.title,
+            "slug": article.slug,
+            "tag": article.tag.name if article.tag else None,
+            "short_description": article.short_description,
+            "cover_image_url": article.cover_image.url if article.cover_image else None,
+            # "content": article.content,
+            "created_at": article.created_at,
+        }
+        if article.is_highlight:
+            data["highlighted_articles"].append(articleData)
+        else:
+            data["regular_articles"].append(articleData)
+
+    return JsonResponse(data)
+
+def BlogArticle_details(request, slug):
+    article = get_object_or_404(BlogArticle, slug=slug, is_active=True)
+
+    articleData = {
+        "id": article.id,
+        "title": article.title,
+        "slug": article.slug,
+        "tag": article.tag.name if article.tag else None,
+        "short_description": article.short_description,
+        "cover_image_url": article.cover_image.url if article.cover_image else None,
+        "content": article.content,
+        "created_at": article.created_at,
+    }
+
+    return JsonResponse(articleData)

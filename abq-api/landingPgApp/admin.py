@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (
+	BlogArticle,
+	BlogTag,
 	Venture,
 	VentureAreas,
 	VentureAmenities,
@@ -162,3 +164,40 @@ class VentureImagesAdmin(admin.ModelAdmin):
 			return format_html('<img src="{}" style="max-height: 200px; max-width: 200px;" />', obj.image.url)
 		return "(Sem imagem)"
 	preview.short_description = "Pré-visualização"
+
+@admin.register(BlogArticle)
+class BlogArticleAdmin(admin.ModelAdmin):
+	list_display = ('id', 'title', 'tag', 'is_highlight', 'is_active', 'created_at')
+	list_filter = ('is_active', 'is_highlight', 'tag')
+	search_fields = ('title', 'slug', 'content')
+	prepopulated_fields = {'slug': ('title',)}
+	readonly_fields = ('preview', 'created_at', 'updated_at')
+	fieldsets = (
+			(None, {
+					'fields': (
+							'title',
+							'slug',
+							'short_description',
+							'tag',
+							'cover_image',
+							'preview',
+							'is_highlight',
+							'is_active',
+							'content',
+					)
+			}),
+			('Controle', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+	)
+
+	def preview(self, obj):
+		if getattr(obj, 'cover_image', None):
+			return format_html('<img src="{}" style="max-height: 200px; max-width: 200px;" />', obj.cover_image.url)
+		return "(Sem imagem)"
+	preview.short_description = "Pré-visualização"
+
+
+@admin.register(BlogTag)
+class BlogTagAdmin(admin.ModelAdmin):
+	list_display = ('id', 'name', 'created_at', 'updated_at')
+	search_fields = ('name',)
+	readonly_fields = ('created_at', 'updated_at')
