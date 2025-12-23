@@ -13,9 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from urllib.parse import urljoin
+from django.core.exceptions import ImproperlyConfigured
 
 from pathlib import Path
 
@@ -73,6 +71,7 @@ if DEBUG:
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -108,17 +107,26 @@ ASGI_APPLICATION = "abqApiProject.asgi.application"
 
 # Database
 load_dotenv()
-tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+database_url = os.getenv("DATABASE_URL", "")
+
+if isinstance(database_url, bytes):
+    database_url = database_url.decode()
+
+if not database_url:
+    raise ImproperlyConfigured("DATABASE_URL environment variable is not set")
+
+tmpPostgres = urlparse(database_url)
+database_name = tmpPostgres.path.lstrip("/")
 use_ssl = os.getenv("DATABASE_SSL", "true").lower() == "true"
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": tmpPostgres.path.replace("/", ""),
+        "NAME": database_name,
         "USER": tmpPostgres.username,
         "PASSWORD": tmpPostgres.password,
         "HOST": tmpPostgres.hostname,
-        "PORT": 5432,
+        "PORT": tmpPostgres.port or 5432,
         "OPTIONS": {
             key: value
             for key, value in parse_qsl(tmpPostgres.query)
@@ -164,7 +172,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+project_static_dir = BASE_DIR / "static"
+STATICFILES_DIRS = [project_static_dir] if project_static_dir.exists() else []
+
+WHITENOISE_USE_FINDERS = False
+if DEBUG:
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+else:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    WHITENOISE_USE_FINDERS = True
 
 # AWS credentials are sourced from the environment to avoid committing secrets
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -174,7 +192,6 @@ AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "albuquerque-enge
 AWS_S3_FILE_OVERWRITE = True
 AWS_DEFAULT_ACL = None
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -187,6 +204,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://albuquerque.hmmb.app.br",
+    "https://albuquerque.hmmb.api.br",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
@@ -196,11 +214,11 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://albuquerque.hmmb.app.br",
+    "https://albuquerque.hmmb.api.br",
 ]
 
 
 # CKEditor Settings
-STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -218,7 +236,7 @@ customColorPalette = [
 # CKEDITOR_5_FILE_STORAGE = "path_to_storage.CustomStorage"  # optional
 
 CKEDITOR_5_MAX_FILE_SIZE = 5
-CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'pdf', 'png', 'gif', 'jpg'] # optional
+CKEDITOR_5_UPLOAD_FILE_TYPES = ["jpeg", "pdf", "png", "gif", "jpg"]  # optional
 CKEDITOR_5_CONFIGS = {
     "default": {
         "toolbar": {
