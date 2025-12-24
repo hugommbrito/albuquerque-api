@@ -4,3 +4,4 @@ from django.apps import AppConfig
 class LandingPgAppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'landingPgApp'
+    verbose_name = "Landing Page Application"

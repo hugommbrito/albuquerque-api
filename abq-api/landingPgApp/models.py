@@ -153,6 +153,7 @@ class Venture(models.Model):
   location = models.CharField(max_length=50, verbose_name='Localização')
   total_units = models.PositiveIntegerField(blank=True, verbose_name='Total de Unidades')
   is_last_units = models.BooleanField(default=False, verbose_name='Últimas Unidades?')
+  homepage_highlight = models.BooleanField(default=False, verbose_name="Destaque na Página Inicial?")
   is_active = models.BooleanField(default=True, verbose_name="Empreendimento Ativo?")
   yt_video_id = models.CharField(max_length=50, blank=True, verbose_name="ID do Vídeo do YouTube")
 
@@ -164,7 +165,7 @@ class Venture(models.Model):
 
   class Meta:
     verbose_name = "Empreendimento"
-    verbose_name_plural = "Empreendimentos"
+    verbose_name_plural = "..Empreendimentos"
 
 
   def __str__(self):
@@ -235,7 +236,7 @@ class BlogArticle(models.Model):
 
   class Meta:
     verbose_name = "Artigo do Blog"
-    verbose_name_plural = "Artigos do Blog"
+    verbose_name_plural = "..Artigos do Blog"
 
   def __str__(self):
     return self.title

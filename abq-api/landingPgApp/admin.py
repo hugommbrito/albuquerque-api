@@ -109,8 +109,9 @@ class VentureFloorPlanInline(admin.StackedInline):
 
 @admin.register(Venture)
 class VentureAdmin(admin.ModelAdmin):
-	list_display = ('id', 'name', 'status', 'category', 'is_last_units', 'created_at')
-	list_filter = ('status', 'category', 'is_last_units')
+	list_display = ('id', 'name', 'status', 'category', 'homepage_highlight', 'is_last_units', 'created_at')
+	list_editable = ('status', 'category', 'homepage_highlight', 'is_last_units')
+	list_filter = ('status', 'category', 'homepage_highlight', 'is_last_units')
 	search_fields = ('name', 'slug', 'short_description', 'location')
 	prepopulated_fields = {'slug': ('name',)}
 	inlines = [
@@ -129,6 +130,7 @@ class VentureAdmin(admin.ModelAdmin):
 				'short_description',
 				'location',
 				'total_units',
+				'homepage_highlight',
 				'is_last_units',
 				'yt_video_id',
 				'status',
@@ -168,6 +170,7 @@ class VentureImagesAdmin(admin.ModelAdmin):
 @admin.register(BlogArticle)
 class BlogArticleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'title', 'tag', 'is_highlight', 'is_active', 'created_at')
+	list_editable = ('is_highlight', 'is_active')
 	list_filter = ('is_active', 'is_highlight', 'tag')
 	search_fields = ('title', 'slug', 'content')
 	prepopulated_fields = {'slug': ('title',)}

@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from .models import BlogArticle, Venture, VentureCategory
 
 
-def ventures_page(request):
+def Ventures_page(request):
     ventures = Venture.objects.filter(is_active=True)
     categories = VentureCategory.objects.filter(ventures__in=ventures).distinct()
 
@@ -38,7 +38,7 @@ def ventures_page(request):
     return JsonResponse(data)
 
 
-def venture_detail_page(request, slug):
+def Venture_detail_page(request, slug):
     venture = get_object_or_404(Venture, slug=slug)
 
     venturePageInfo = {
@@ -126,8 +126,9 @@ def venture_detail_page(request, slug):
 
     return JsonResponse(venturePageInfo)
 
+
 def BlogPage_details(request):
-    blogArticles = BlogArticle.objects.filter(is_active=True).order_by('-created_at')
+    blogArticles = BlogArticle.objects.filter(is_active=True).order_by("-created_at")
     data = {"highlighted_articles": [], "regular_articles": []}
 
     for article in blogArticles:
@@ -139,7 +140,9 @@ def BlogPage_details(request):
             "short_description": article.short_description,
             "cover_image_url": article.cover_image.url if article.cover_image else None,
             # "content": article.content,
-            "created_at": article.created_at,
+            "created_at": (
+                article.created_at.isoformat() if article.created_at else None
+            ),
         }
         if article.is_highlight:
             data["highlighted_articles"].append(articleData)
@@ -148,10 +151,17 @@ def BlogPage_details(request):
 
     return JsonResponse(data)
 
+
 def BlogArticle_details(request, slug):
     article = get_object_or_404(BlogArticle, slug=slug, is_active=True)
+    suggested_articles = (
+        BlogArticle.objects.filter(is_active=True)
+        .exclude(id=article.id)
+        .order_by("?")[:3]
+    )
 
-    articleData = {
+    response = {"article": {}, "suggested_articles": []}
+    response["article"] = {
         "id": article.id,
         "title": article.title,
         "slug": article.slug,
@@ -159,7 +169,60 @@ def BlogArticle_details(request, slug):
         "short_description": article.short_description,
         "cover_image_url": article.cover_image.url if article.cover_image else None,
         "content": article.content,
-        "created_at": article.created_at,
+        "created_at": article.created_at.isoformat() if article.created_at else None,
     }
+    response["suggested_articles"] = [
+        {
+            "id": suggested.id,
+            "title": suggested.title,
+            "slug": suggested.slug,
+            "short_description": suggested.short_description,
+            "cover_image_url": (
+                suggested.cover_image.url if suggested.cover_image else None
+            ),
+        }
+        for suggested in suggested_articles
+    ]
 
-    return JsonResponse(articleData)
+    return JsonResponse(response)
+
+
+def Home_page_info(request):
+    home_page_ventures = Venture.objects.filter(
+        homepage_highlight=True, is_active=True
+    ).order_by("-created_at")
+    home_page_articles = BlogArticle.objects.filter(is_active=True).order_by(
+        "-created_at"
+    )[:3]
+    data = {
+        "home_page_ventures": [
+            {
+                "id": venture.id,
+                "name": venture.name,
+                "slug": venture.slug,
+                "short_description": venture.short_description,
+                "location": venture.location,
+                "status": venture.status.name if venture.status else None,
+                "total_units": venture.total_units,
+                "hero_image_url": (
+                    image.image.url
+                    if (image := venture.images.filter(is_cover=True).first())
+                    else None
+                ),
+            }
+            for venture in home_page_ventures
+        ],
+        "home_page_articles": [
+            {
+                "id": article.id,
+                "title": article.title,
+                "slug": article.slug,
+                "short_description": article.short_description,
+                "cover_image_url": (
+                    article.cover_image.url if article.cover_image else None
+                ),
+            }
+            for article in home_page_articles
+        ],
+    }
+    return JsonResponse(data)
