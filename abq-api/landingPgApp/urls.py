@@ -16,4 +16,6 @@ urlpatterns = [
     path("blog/<slug:slug>", views.BlogArticle_details, name="blog_article_detail_page_no_slash"),
     path("home-page-info/", views.Home_page_info, name="home_page_info"),
     path("home-page-info", views.Home_page_info, name="home_page_info_no_slash"),
+    path("send-email/", views.send_message_email, name="send_email"),
+    path("send-email", views.send_message_email, name="send_email_no_slash"),
 ]

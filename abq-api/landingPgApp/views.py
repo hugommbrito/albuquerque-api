@@ -1,7 +1,13 @@
+import json
+import os
+
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import BlogArticle, Venture, VentureCategory
+from .forms import EmailMessageForm
 
 
 def Ventures_page(request):
@@ -226,3 +232,33 @@ def Home_page_info(request):
         ],
     }
     return JsonResponse(data)
+
+@csrf_exempt
+def send_message_email(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        form = EmailMessageForm(data)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            phone = form.cleaned_data['phone']
+            message = form.cleaned_data['message']
+
+            send_mail(
+                subject=f'[CONTATO VIA SITE] Mensagem de {name}',
+                message=f'Nome: {name}\nTelefone: {phone}\nMensagem: {message}',
+                from_email=os.getenv("EMAIL_HOST_USER") ,
+                recipient_list=['eu@hugobrito.dev.br'],
+            )
+
+            return JsonResponse({'success': 'Message sent successfully'})
+        else:
+            return JsonResponse({'error': 'Invalid form data', 'details': form.errors}, status=400)
+        
+    return JsonResponse({'error': 'Invalid request method, this endpoint only accepts POST requests'}, status=405)
+
+
+

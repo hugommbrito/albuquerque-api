@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import certifi
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
 from django.core.exceptions import ImproperlyConfigured
@@ -183,6 +184,31 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     WHITENOISE_USE_FINDERS = True
+
+# EMAIL SENDING CONFIGURATION
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development, prints emails to console
+
+# In production, configure SMTP or other email services accordingly
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "false").lower() == "true"
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "30"))
+
+# Se SSL estiver ativo, desabilita TLS para evitar conflito.
+if EMAIL_USE_SSL:
+    EMAIL_USE_TLS = False
+
+# Apenas use certificados de cliente se realmente precisar mutual TLS.
+EMAIL_SSL_CERTFILE = os.getenv("EMAIL_SSL_CERTFILE") or None
+EMAIL_SSL_KEYFILE = os.getenv("EMAIL_SSL_KEYFILE") or None
+
+# Garante cadeia de confiança usando o bundle do certifi (não configura client cert).
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+os.environ.setdefault("REQUESTS_CA_BUNDLE", certifi.where())
 
 # AWS credentials are sourced from the environment to avoid committing secrets
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
