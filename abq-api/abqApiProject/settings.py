@@ -36,6 +36,9 @@ ALLOWED_HOSTS = [
     ".vercel.app",  # Allow all vercel subdomains
     "albuquerque-api-hugommbrito-hugommbritos-projects.vercel.app",  # Specific vercel domain
     "albuquerque.hmmb.api.br",  # Specific production domain
+    "www.albuquerque.hmmb.api.br",
+    "albuquerque.hmmb.app.br",
+    "www.albuquerque.hmmb.app.br",
 ]
 
 INTERNAL_IPS = [
@@ -194,7 +197,7 @@ EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "false").lower() == "true"
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "30"))
 
@@ -230,17 +233,21 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://albuquerque.hmmb.app.br",
+    "https://www.albuquerque.hmmb.app.br",
     "https://albuquerque.hmmb.api.br",
+    "https://www.albuquerque.hmmb.api.br",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://albuquerque.hmmb.app.br",
+    "https://www.albuquerque.hmmb.app.br",
     "https://albuquerque.hmmb.api.br",
+    "https://www.albuquerque.hmmb.api.br",
 ]
 
 
