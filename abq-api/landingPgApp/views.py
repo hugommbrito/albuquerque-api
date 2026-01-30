@@ -61,6 +61,7 @@ def Venture_detail_page(request, slug):
             {"label": venture.name, "url": f"/nossas-obras/{venture.slug}/"},
         ],
         "location": venture.location,
+        "unitsCount": venture.total_units,
         "status": venture.status.name if venture.status else None,
         "lastUnits": venture.is_last_units,
         "amenities": [
@@ -253,7 +254,7 @@ def send_message_email(request):
                 subject=f"[CONTATO VIA SITE] Mensagem de {name}",
                 message=f"Nome: {name}\nTelefone: {phone}\nMensagem: {message}",
                 from_email=settings.EMAIL_HOST_USER or None,
-                recipient_list=["eu@hugobrito.dev.br"],
+                recipient_list=["eu@hugobrito.dev.br", "caue@albuquerqueengenharia.net"],
             )
 
             return JsonResponse({"success": "Message sent successfully"})
