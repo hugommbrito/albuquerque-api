@@ -31,6 +31,22 @@ def venture_image_upload_to(instance, filename):
 
   return f"{folder}/{prefix}/{timestamp}_{suffix}{ext}"
 
+def site_image_upload_to(instance, filename):  
+  folder = 'site_images'
+  _, ext = os.path.splitext(filename)
+  ext = (ext or '').lower() or '.img'
+
+  page = getattr(instance, 'page', None)
+  if page:
+    prefix = slugify(page)
+  else:
+    prefix = 'general'
+
+  timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+  suffix = instance.pk or 'new'
+
+  return f"{folder}/{prefix}/{timestamp}_{suffix}{ext}"
+
 def blog_article_image_upload_to(instance, filename):
   folder = 'blog_articles'
   _, ext = os.path.splitext(filename)
@@ -219,6 +235,51 @@ class VentureImages(models.Model):
 
   def __str__(self):
      return self.image.name
+  
+class SiteImages(models.Model):
+  class SitePage(models.TextChoices):
+    HOME = "home", "Home"
+    VENTURES = "ventures", "Nossas Obras"
+    ABOUT_US = "about_us", "Nossa História"
+    YOUR_DREAMS = "your_dreams", "Seus Sonhos"
+    BLOG = "blog", "Blog"
+
+  image = models.ImageField(storage=S3Boto3Storage(), upload_to=site_image_upload_to, verbose_name="Imagem")
+  description = models.CharField(max_length=200, blank=True, verbose_name="Descrição")
+  page = models.CharField(
+    max_length=30,
+    choices=SitePage.choices,
+    default=SitePage.HOME,
+    db_index=True,
+    verbose_name="Página do Site",
+  )
+  is_active = models.BooleanField(default=True, verbose_name="Imagem Ativa?")
+  is_desktop = models.BooleanField(default=True, verbose_name="Imagem para Desktop?")
+  is_mobile = models.BooleanField(default=False, verbose_name="Imagem para Mobile?")
+  
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def save(self, *args, **kwargs):
+      # Imagem sem ambiente definido deve ser inativa
+      if not self.is_desktop and not self.is_mobile:
+          self.is_active = False
+
+      if self.is_active:
+          # Garante apenas uma imagem ativa por ambiente (desktop/mobile) por página
+          if self.is_desktop:
+              SiteImages.objects.filter(page=self.page, is_active=True, is_desktop=True).exclude(pk=self.pk).update(is_desktop=False)
+          if self.is_mobile:
+              SiteImages.objects.filter(page=self.page, is_active=True, is_mobile=True).exclude(pk=self.pk).update(is_mobile=False)
+
+      super().save(*args, **kwargs)
+
+  class Meta:
+    verbose_name = "Imagem do Site"
+    verbose_name_plural = "..Imagens do Site"
+
+  def __str__(self):
+     return f"{self.get_page_display()} - {self.image.name}"
   
 
 class BlogArticle(models.Model):

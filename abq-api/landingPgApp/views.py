@@ -7,13 +7,16 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import BlogArticle, Venture, VentureCategory
+from .models import BlogArticle, SiteImages, Venture, VentureCategory
 from .forms import EmailMessageForm
 
 
 def Ventures_page(request):
     ventures = Venture.objects.filter(is_active=True)
     categories = VentureCategory.objects.filter(ventures__in=ventures).distinct()
+
+    ventures_page_desktop_cover_image = SiteImages.objects.filter(page="ventures", is_active=True, is_desktop=True).first()
+    ventures_page_mobile_cover_image = SiteImages.objects.filter(page="ventures", is_active=True, is_mobile=True).first()
 
     data = {
         "categories": [
@@ -40,6 +43,8 @@ def Ventures_page(request):
             }
             for category in categories
         ],
+        "desktop_cover_image_url": ventures_page_desktop_cover_image.image.url if ventures_page_desktop_cover_image else None,
+        "mobile_cover_image_url": ventures_page_mobile_cover_image.image.url if ventures_page_mobile_cover_image else None,
     }
 
     return JsonResponse(data)
@@ -134,10 +139,33 @@ def Venture_detail_page(request, slug):
 
     return JsonResponse(venturePageInfo)
 
+def About_us_page(request):
+    about_us_desktop_cover_image = SiteImages.objects.filter(page="about_us", is_active=True, is_desktop=True).first()
+    about_us_mobile_cover_image = SiteImages.objects.filter(page="about_us", is_active=True, is_mobile=True).first()
+
+    data = {
+        "desktop_cover_image_url": about_us_desktop_cover_image.image.url if about_us_desktop_cover_image else None,
+        "mobile_cover_image_url": about_us_mobile_cover_image.image.url if about_us_mobile_cover_image else None,
+    }
+    return JsonResponse(data)
+
+def Your_dreams_page(request):
+    your_dreams_desktop_cover_image = SiteImages.objects.filter(page="your_dreams", is_active=True, is_desktop=True).first()
+    your_dreams_mobile_cover_image = SiteImages.objects.filter(page="your_dreams", is_active=True, is_mobile=True).first()
+
+    data = {
+        "desktop_cover_image_url": your_dreams_desktop_cover_image.image.url if your_dreams_desktop_cover_image else None,
+        "mobile_cover_image_url": your_dreams_mobile_cover_image.image.url if your_dreams_mobile_cover_image else None,
+    }
+    return JsonResponse(data)
+
 
 def BlogPage_details(request):
     blogArticles = BlogArticle.objects.filter(is_active=True).order_by("-created_at")
     data = {"highlighted_articles": [], "regular_articles": []}
+
+    blog_page_desktop_cover_image = SiteImages.objects.filter(page="blog", is_active=True, is_desktop=True).first()
+    blog_page_mobile_cover_image = SiteImages.objects.filter(page="blog", is_active=True, is_mobile=True).first()
 
     for article in blogArticles:
         articleData = {
@@ -156,6 +184,9 @@ def BlogPage_details(request):
             data["highlighted_articles"].append(articleData)
         else:
             data["regular_articles"].append(articleData)
+
+    data["desktop_cover_image_url"] = blog_page_desktop_cover_image.image.url if blog_page_desktop_cover_image else None
+    data["mobile_cover_image_url"] = blog_page_mobile_cover_image.image.url if blog_page_mobile_cover_image else None
 
     return JsonResponse(data)
 
@@ -202,6 +233,8 @@ def Home_page_info(request):
     home_page_articles = BlogArticle.objects.filter(is_active=True).order_by(
         "-created_at"
     )[:3]
+    home_page_desktop_cover_image = SiteImages.objects.filter(page="home", is_active=True, is_desktop=True).first()
+    home_page_mobile_cover_image = SiteImages.objects.filter(page="home", is_active=True, is_mobile=True).first()
     data = {
         "home_page_ventures": [
             {
@@ -232,6 +265,8 @@ def Home_page_info(request):
             }
             for article in home_page_articles
         ],
+        "desktop_cover_image_url": home_page_desktop_cover_image.image.url if home_page_desktop_cover_image else None,
+        "mobile_cover_image_url": home_page_mobile_cover_image.image.url if home_page_mobile_cover_image else None,
     }
     return JsonResponse(data)
 

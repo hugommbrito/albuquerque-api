@@ -16,6 +16,10 @@ urlpatterns = [
     path("blog/<slug:slug>", views.BlogArticle_details, name="blog_article_detail_page_no_slash"),
     path("home-page-info/", views.Home_page_info, name="home_page_info"),
     path("home-page-info", views.Home_page_info, name="home_page_info_no_slash"),
+    path("about-us/", views.About_us_page, name="about_us_page"),
+    path("about-us", views.About_us_page, name="about_us_page_no_slash"),
+    path("your-dreams/", views.Your_dreams_page, name="your_dreams_page"),
+    path("your-dreams", views.Your_dreams_page, name="your_dreams_page_no_slash"),
     path("send-email/", views.send_message_email, name="send_email"),
     path("send-email", views.send_message_email, name="send_email_no_slash"),
 ]

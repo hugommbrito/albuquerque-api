@@ -5,6 +5,7 @@ from django.utils.html import format_html
 from .models import (
 	BlogArticle,
 	BlogTag,
+	SiteImages,
 	Venture,
 	VentureAreas,
 	VentureAmenities,
@@ -160,6 +161,21 @@ class VentureImagesAdmin(admin.ModelAdmin):
 	readonly_fields = ('preview',)
 	list_editable = ('is_cover', 'is_high_light', 'order')
 	
+
+	def preview(self, obj):
+		if getattr(obj, 'image', None):
+			return format_html('<img src="{}" style="max-height: 200px; max-width: 200px;" />', obj.image.url)
+		return "(Sem imagem)"
+	preview.short_description = "Pré-visualização"
+
+@admin.register(SiteImages)
+class SiteImagesAdmin(admin.ModelAdmin):
+	list_display = ('id', 'page', 'is_active', 'is_desktop', 'is_mobile', 'description', 'preview', 'created_at')
+	list_filter = ('page', 'is_active', 'is_desktop', 'is_mobile', 'created_at')
+	list_editable = ('is_active', 'is_desktop', 'is_mobile')
+	search_fields = ('description',)
+	readonly_fields = ('preview', 'created_at', 'updated_at')
+	fields = ('image', 'preview', 'description', 'page', 'is_active', 'is_desktop', 'is_mobile', 'created_at', 'updated_at')
 
 	def preview(self, obj):
 		if getattr(obj, 'image', None):
