@@ -314,3 +314,19 @@ class BlogTag(models.Model):
 
   def __str__(self):
     return self.name
+  
+class InstructionalVideo(models.Model):
+  title = models.CharField(max_length=200, verbose_name="Título")
+  video_url = models.URLField(max_length=500, verbose_name="URL do Vídeo")
+  cover_image = models.ImageField(storage=S3Boto3Storage(), upload_to=blog_article_image_upload_to, verbose_name="Imagem da Capa", null=True, blank=True)
+  is_active = models.BooleanField(default=True, verbose_name="Vídeo Ativo?")
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  class Meta:
+    verbose_name = "Vídeo Instrucional"
+    verbose_name_plural = "..Vídeos Instrucionais"
+
+  def __str__(self):
+    return self.title

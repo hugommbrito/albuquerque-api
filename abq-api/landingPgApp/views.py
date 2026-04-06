@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import BlogArticle, SiteImages, Venture, VentureCategory
+from .models import BlogArticle, InstructionalVideo, SiteImages, Venture, VentureCategory
 from .forms import EmailMessageForm
 
 
@@ -153,9 +153,22 @@ def Your_dreams_page(request):
     your_dreams_desktop_cover_image = SiteImages.objects.filter(page="your_dreams", is_active=True, is_desktop=True).first()
     your_dreams_mobile_cover_image = SiteImages.objects.filter(page="your_dreams", is_active=True, is_mobile=True).first()
 
+    instructional_videos = InstructionalVideo.objects.filter(is_active=True).order_by("-updated_at")
+
     data = {
         "desktop_cover_image_url": your_dreams_desktop_cover_image.image.url if your_dreams_desktop_cover_image else None,
         "mobile_cover_image_url": your_dreams_mobile_cover_image.image.url if your_dreams_mobile_cover_image else None,
+        "instructional_videos": [
+            {
+                "id": video.id,
+                "title": video.title,
+                "video_url": video.video_url,
+                "cover_image_url": video.cover_image.url if video.cover_image else None,
+                "created_at": video.created_at.isoformat() if video.created_at else None,
+                "updated_at": video.updated_at.isoformat() if video.updated_at else None,
+            }
+            for video in instructional_videos
+        ],
     }
     return JsonResponse(data)
 
@@ -233,8 +246,12 @@ def Home_page_info(request):
     home_page_articles = BlogArticle.objects.filter(is_active=True).order_by(
         "-created_at"
     )[:3]
+    
     home_page_desktop_cover_image = SiteImages.objects.filter(page="home", is_active=True, is_desktop=True).first()
     home_page_mobile_cover_image = SiteImages.objects.filter(page="home", is_active=True, is_mobile=True).first()
+    
+    instructional_videos = InstructionalVideo.objects.filter(is_active=True).order_by("-updated_at")
+
     data = {
         "home_page_ventures": [
             {
@@ -267,6 +284,17 @@ def Home_page_info(request):
         ],
         "desktop_cover_image_url": home_page_desktop_cover_image.image.url if home_page_desktop_cover_image else None,
         "mobile_cover_image_url": home_page_mobile_cover_image.image.url if home_page_mobile_cover_image else None,
+        "instructional_videos": [
+            {
+                "id": video.id,
+                "title": video.title,
+                "video_url": video.video_url,
+                "cover_image_url": video.cover_image.url if video.cover_image else None,
+                "created_at": video.created_at.isoformat() if video.created_at else None,
+                "updated_at": video.updated_at.isoformat() if video.updated_at else None,
+            }
+            for video in instructional_videos
+        ],
     }
     return JsonResponse(data)
 

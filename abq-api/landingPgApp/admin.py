@@ -5,6 +5,7 @@ from django.utils.html import format_html
 from .models import (
 	BlogArticle,
 	BlogTag,
+	InstructionalVideo,
 	SiteImages,
 	Venture,
 	VentureAreas,
@@ -219,4 +220,12 @@ class BlogArticleAdmin(admin.ModelAdmin):
 class BlogTagAdmin(admin.ModelAdmin):
 	list_display = ('id', 'name', 'created_at', 'updated_at')
 	search_fields = ('name',)
+	readonly_fields = ('created_at', 'updated_at')
+
+@admin.register(InstructionalVideo)
+class InstructionalVideoAdmin(admin.ModelAdmin):
+	list_display = ('id', 'title', 'video_url', 'is_active', 'created_at', 'updated_at')
+	list_editable = ('is_active',)
+	list_filter = ('is_active',)
+	search_fields = ('title', 'video_url')
 	readonly_fields = ('created_at', 'updated_at')
