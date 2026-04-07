@@ -67,6 +67,8 @@ def blog_article_image_upload_to(instance, filename):
 
 class VentureStatus(models.Model):
   name = models.CharField(max_length=50, verbose_name="Nome")
+  order = models.PositiveIntegerField(default=0, verbose_name="Ordem")
+  is_visible = models.BooleanField(default=True, verbose_name="Visível?")
 
   created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
   updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
@@ -74,6 +76,7 @@ class VentureStatus(models.Model):
   class Meta:
     verbose_name = "Status do Empreendimento"
     verbose_name_plural = "Status dos Empreendimentos"
+    ordering = ['order', 'name']
 
   def __str__(self):
     return self.name
@@ -170,8 +173,9 @@ class Venture(models.Model):
   total_units = models.PositiveIntegerField(blank=True, verbose_name='Total de Unidades')
   is_last_units = models.BooleanField(default=False, verbose_name='Últimas Unidades?')
   homepage_highlight = models.BooleanField(default=False, verbose_name="Destaque na Página Inicial?")
-  is_active = models.BooleanField(default=True, verbose_name="Empreendimento Ativo?")
+  is_visible = models.BooleanField(default=True, verbose_name="Visível?")
   yt_video_id = models.CharField(max_length=50, blank=True, verbose_name="ID do Vídeo do YouTube")
+  order = models.PositiveIntegerField(default=0, verbose_name="Ordem")
 
   status = models.ForeignKey(VentureStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='ventures')
   category = models.ForeignKey(VentureCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='ventures')
@@ -182,6 +186,7 @@ class Venture(models.Model):
   class Meta:
     verbose_name = "Empreendimento"
     verbose_name_plural = "..Empreendimentos"
+    ordering = ['order', 'name']
 
 
   def __str__(self):
@@ -327,6 +332,28 @@ class InstructionalVideo(models.Model):
   class Meta:
     verbose_name = "Vídeo Instrucional"
     verbose_name_plural = "..Vídeos Instrucionais"
+
+  def __str__(self):
+    return self.title
+
+
+class Ebook(models.Model):
+  title = models.CharField(max_length=200, verbose_name="Título")
+  file = models.FileField(storage=S3Boto3Storage(), upload_to="ebooks/", verbose_name="Arquivo PDF")
+  is_active = models.BooleanField(default=True, verbose_name="Ativo?")
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def save(self, *args, **kwargs):
+      # Garante apenas um ebook ativo por vez
+      if self.is_active:
+          Ebook.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+      super().save(*args, **kwargs)
+
+  class Meta:
+    verbose_name = "Ebook"
+    verbose_name_plural = "Ebooks"
 
   def __str__(self):
     return self.title

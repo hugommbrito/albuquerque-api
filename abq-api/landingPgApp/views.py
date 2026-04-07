@@ -7,22 +7,22 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import BlogArticle, InstructionalVideo, SiteImages, Venture, VentureCategory
+from .models import BlogArticle, Ebook, InstructionalVideo, SiteImages, Venture, VentureStatus
 from .forms import EmailMessageForm
 
 
 def Ventures_page(request):
-    ventures = Venture.objects.filter(is_active=True)
-    categories = VentureCategory.objects.filter(ventures__in=ventures).distinct()
+    ventures = Venture.objects.filter(is_visible=True)
+    statuses = VentureStatus.objects.filter(ventures__in=ventures, is_visible=True).distinct()
 
     ventures_page_desktop_cover_image = SiteImages.objects.filter(page="ventures", is_active=True, is_desktop=True).first()
     ventures_page_mobile_cover_image = SiteImages.objects.filter(page="ventures", is_active=True, is_mobile=True).first()
 
     data = {
-        "categories": [
+        "statuses": [
             {
-                "id": category.id,
-                "name": category.name,
+                "id": status.id,
+                "name": status.name,
                 "ventures": [
                     {
                         "id": venture.id,
@@ -30,7 +30,6 @@ def Ventures_page(request):
                         "slug": venture.slug,
                         "short_description": venture.short_description,
                         "location": venture.location,
-                        "status": venture.status.name if venture.status else None,
                         "total_units": venture.total_units,
                         "hero_image_url": (
                             image.image.url
@@ -38,10 +37,10 @@ def Ventures_page(request):
                             else None
                         ),
                     }
-                    for venture in ventures.filter(category=category)
+                    for venture in ventures.filter(status=status)
                 ],
             }
-            for category in categories
+            for status in statuses
         ],
         "desktop_cover_image_url": ventures_page_desktop_cover_image.image.url if ventures_page_desktop_cover_image else None,
         "mobile_cover_image_url": ventures_page_mobile_cover_image.image.url if ventures_page_mobile_cover_image else None,
@@ -154,6 +153,7 @@ def Your_dreams_page(request):
     your_dreams_mobile_cover_image = SiteImages.objects.filter(page="your_dreams", is_active=True, is_mobile=True).first()
 
     instructional_videos = InstructionalVideo.objects.filter(is_active=True).order_by("-updated_at")
+    ebook = Ebook.objects.filter(is_active=True).order_by("-updated_at").first()
 
     data = {
         "desktop_cover_image_url": your_dreams_desktop_cover_image.image.url if your_dreams_desktop_cover_image else None,
@@ -169,6 +169,8 @@ def Your_dreams_page(request):
             }
             for video in instructional_videos
         ],
+        "ebook_url": ebook.file.url if ebook and ebook.file else None,
+
     }
     return JsonResponse(data)
 
@@ -241,7 +243,7 @@ def BlogArticle_details(request, slug):
 
 def Home_page_info(request):
     home_page_ventures = Venture.objects.filter(
-        homepage_highlight=True, is_active=True
+        homepage_highlight=True, is_visible=True
     ).order_by("-created_at")
     home_page_articles = BlogArticle.objects.filter(is_active=True).order_by(
         "-created_at"
@@ -251,6 +253,7 @@ def Home_page_info(request):
     home_page_mobile_cover_image = SiteImages.objects.filter(page="home", is_active=True, is_mobile=True).first()
     
     instructional_videos = InstructionalVideo.objects.filter(is_active=True).order_by("-updated_at")
+    ebook = Ebook.objects.filter(is_active=True).order_by("-updated_at").first()
 
     data = {
         "home_page_ventures": [
@@ -295,6 +298,7 @@ def Home_page_info(request):
             }
             for video in instructional_videos
         ],
+            "ebook_url": ebook.file.url if ebook and ebook.file else None,
     }
     return JsonResponse(data)
 

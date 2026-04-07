@@ -2,9 +2,14 @@ from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 
+admin.site.site_header = "Painel do Site - Albuquerque Engenharia"
+admin.site.site_title = "Painel do Site - Albuquerque Engenharia"
+admin.site.index_title = "Painel do Site"
+
 from .models import (
 	BlogArticle,
 	BlogTag,
+	Ebook,
 	InstructionalVideo,
 	SiteImages,
 	Venture,
@@ -111,9 +116,9 @@ class VentureFloorPlanInline(admin.StackedInline):
 
 @admin.register(Venture)
 class VentureAdmin(admin.ModelAdmin):
-	list_display = ('id', 'name', 'status', 'category', 'homepage_highlight', 'is_last_units', 'created_at')
-	list_editable = ('status', 'category', 'homepage_highlight', 'is_last_units')
-	list_filter = ('status', 'category', 'homepage_highlight', 'is_last_units')
+	list_display = ('id', 'name', 'order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units', 'created_at')
+	list_editable = ('order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units')
+	list_filter = ('is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units')
 	search_fields = ('name', 'slug', 'short_description', 'location')
 	prepopulated_fields = {'slug': ('name',)}
 	inlines = [
@@ -132,6 +137,7 @@ class VentureAdmin(admin.ModelAdmin):
 				'short_description',
 				'location',
 				'total_units',
+				'is_visible',
 				'homepage_highlight',
 				'is_last_units',
 				'yt_video_id',
@@ -145,7 +151,9 @@ class VentureAdmin(admin.ModelAdmin):
 
 @admin.register(VentureStatus)
 class VentureStatusAdmin(admin.ModelAdmin):
-	list_display = ('id', 'name', 'created_at', 'updated_at')
+	list_display = ('id', 'name', 'order', 'is_visible', 'created_at', 'updated_at')
+	list_editable = ('order', 'is_visible')
+	list_filter = ('is_visible',)
 	search_fields = ('name',)
 	readonly_fields = ('created_at', 'updated_at')
 
@@ -220,6 +228,14 @@ class BlogArticleAdmin(admin.ModelAdmin):
 class BlogTagAdmin(admin.ModelAdmin):
 	list_display = ('id', 'name', 'created_at', 'updated_at')
 	search_fields = ('name',)
+	readonly_fields = ('created_at', 'updated_at')
+
+@admin.register(Ebook)
+class EbookAdmin(admin.ModelAdmin):
+	list_display = ('id', 'title', 'is_active', 'created_at', 'updated_at')
+	list_editable = ('is_active',)
+	list_filter = ('is_active',)
+	search_fields = ('title',)
 	readonly_fields = ('created_at', 'updated_at')
 
 @admin.register(InstructionalVideo)
