@@ -2,10 +2,6 @@ from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 
-admin.site.site_header = "Painel do Site - Albuquerque Engenharia"
-admin.site.site_title = "Painel do Site - Albuquerque Engenharia"
-admin.site.index_title = "Painel do Site"
-
 from .models import (
 	BlogArticle,
 	BlogTag,
@@ -21,6 +17,49 @@ from .models import (
 	VentureImages,
 	VentureStatus,
 )
+
+
+class CustomAdminSite(admin.AdminSite):
+
+	GROUPS = {
+		'Empreendimentos': ['Venture', 'VentureStatus', 'VentureCategory', 'VentureImages'],
+		'Blog': ['BlogArticle', 'BlogTag'],
+		'Materiais': ['Ebook', 'InstructionalVideo'],
+		'Site': ['SiteImages'],
+	}
+
+	def get_app_list(self, request, app_label=None):
+		original = super().get_app_list(request, app_label)
+
+		all_models = {}
+		for app in original:
+			for model in app['models']:
+				all_models[model['object_name']] = model
+
+		grouped = []
+		for group_name, model_names in self.GROUPS.items():
+			models_in_group = [
+				all_models[name]
+				for name in model_names
+				if name in all_models
+			]
+			if models_in_group:
+				grouped.append({
+					'name': group_name,
+					'app_label': group_name.lower(),
+					'app_url': '#',
+					'has_module_perms': True,
+					'models': models_in_group,
+				})
+
+		return grouped
+
+
+admin_site = CustomAdminSite(name='admin')
+admin_site.site_header = "Painel do Site - Albuquerque Engenharia"
+admin_site.site_title = "Painel do Site - Albuquerque Engenharia"
+admin_site.index_title = "Painel do Site"
+
 
 class StringListWidget(forms.MultiWidget):
 	def __init__(self, count=10, attrs=None):
@@ -114,7 +153,7 @@ class VentureFloorPlanInline(admin.StackedInline):
 	# raw_id_fields = ('imgages')
 
 
-@admin.register(Venture)
+@admin.register(Venture, site=admin_site)
 class VentureAdmin(admin.ModelAdmin):
 	list_display = ('id', 'name', 'order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units', 'created_at')
 	list_editable = ('order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units')
@@ -149,7 +188,7 @@ class VentureAdmin(admin.ModelAdmin):
 	)
 
 
-@admin.register(VentureStatus)
+@admin.register(VentureStatus, site=admin_site)
 class VentureStatusAdmin(admin.ModelAdmin):
 	list_display = ('id', 'name', 'order', 'is_visible', 'created_at', 'updated_at')
 	list_editable = ('order', 'is_visible')
@@ -157,19 +196,19 @@ class VentureStatusAdmin(admin.ModelAdmin):
 	search_fields = ('name',)
 	readonly_fields = ('created_at', 'updated_at')
 
-@admin.register(VentureCategory)
+@admin.register(VentureCategory, site=admin_site)
 class VentureCategoryAdmin(admin.ModelAdmin):
   list_display = ('id', 'name', 'created_at', 'updated_at')
   readonly_fields = ('created_at', 'updated_at')
 
-@admin.register(VentureImages)
+@admin.register(VentureImages, site=admin_site)
 class VentureImagesAdmin(admin.ModelAdmin):
 	list_display = ('id', 'venture', 'caption', 'is_cover', 'is_high_light', 'order', 'preview')
 	list_filter = ('is_cover', 'is_high_light', 'venture', 'area', 'floorPlan')
 	search_fields = ('caption', 'venture__name')
 	readonly_fields = ('preview',)
 	list_editable = ('is_cover', 'is_high_light', 'order')
-	
+
 
 	def preview(self, obj):
 		if getattr(obj, 'image', None):
@@ -177,7 +216,7 @@ class VentureImagesAdmin(admin.ModelAdmin):
 		return "(Sem imagem)"
 	preview.short_description = "Pré-visualização"
 
-@admin.register(SiteImages)
+@admin.register(SiteImages, site=admin_site)
 class SiteImagesAdmin(admin.ModelAdmin):
 	list_display = ('id', 'page', 'is_active', 'is_desktop', 'is_mobile', 'description', 'preview', 'created_at')
 	list_filter = ('page', 'is_active', 'is_desktop', 'is_mobile', 'created_at')
@@ -192,7 +231,7 @@ class SiteImagesAdmin(admin.ModelAdmin):
 		return "(Sem imagem)"
 	preview.short_description = "Pré-visualização"
 
-@admin.register(BlogArticle)
+@admin.register(BlogArticle, site=admin_site)
 class BlogArticleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'title', 'tag', 'is_highlight', 'is_active', 'created_at')
 	list_editable = ('is_highlight', 'is_active')
@@ -224,13 +263,13 @@ class BlogArticleAdmin(admin.ModelAdmin):
 	preview.short_description = "Pré-visualização"
 
 
-@admin.register(BlogTag)
+@admin.register(BlogTag, site=admin_site)
 class BlogTagAdmin(admin.ModelAdmin):
 	list_display = ('id', 'name', 'created_at', 'updated_at')
 	search_fields = ('name',)
 	readonly_fields = ('created_at', 'updated_at')
 
-@admin.register(Ebook)
+@admin.register(Ebook, site=admin_site)
 class EbookAdmin(admin.ModelAdmin):
 	list_display = ('id', 'title', 'is_active', 'created_at', 'updated_at')
 	list_editable = ('is_active',)
@@ -238,7 +277,7 @@ class EbookAdmin(admin.ModelAdmin):
 	search_fields = ('title',)
 	readonly_fields = ('created_at', 'updated_at')
 
-@admin.register(InstructionalVideo)
+@admin.register(InstructionalVideo, site=admin_site)
 class InstructionalVideoAdmin(admin.ModelAdmin):
 	list_display = ('id', 'title', 'video_url', 'is_active', 'created_at', 'updated_at')
 	list_editable = ('is_active',)

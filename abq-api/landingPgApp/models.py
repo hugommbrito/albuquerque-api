@@ -281,7 +281,7 @@ class SiteImages(models.Model):
 
   class Meta:
     verbose_name = "Imagem do Site"
-    verbose_name_plural = "..Imagens do Site"
+    verbose_name_plural = "Imagens do Site"
 
   def __str__(self):
      return f"{self.get_page_display()} - {self.image.name}"
@@ -331,7 +331,7 @@ class InstructionalVideo(models.Model):
 
   class Meta:
     verbose_name = "Vídeo Instrucional"
-    verbose_name_plural = "..Vídeos Instrucionais"
+    verbose_name_plural = "Vídeos Instrucionais"
 
   def __str__(self):
     return self.title
