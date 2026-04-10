@@ -7,6 +7,7 @@ from .models import (
 	BlogTag,
 	Ebook,
 	InstructionalVideo,
+	ServiceSolicitationTerm,
 	SiteImages,
 	Venture,
 	VentureAreas,
@@ -25,7 +26,7 @@ class CustomAdminSite(admin.AdminSite):
 		'Empreendimentos': ['Venture', 'VentureStatus', 'VentureCategory', 'VentureImages'],
 		'Blog': ['BlogArticle', 'BlogTag'],
 		'Materiais': ['Ebook', 'InstructionalVideo'],
-		'Site': ['SiteImages'],
+		'Site': ['SiteImages', 'ServiceSolicitationTerm'],
 	}
 
 	def get_app_list(self, request, app_label=None):
@@ -284,3 +285,11 @@ class InstructionalVideoAdmin(admin.ModelAdmin):
 	list_filter = ('is_active',)
 	search_fields = ('title', 'video_url')
 	readonly_fields = ('created_at', 'updated_at')
+
+@admin.register(ServiceSolicitationTerm, site=admin_site)
+class ServiceSolicitationTermAdmin(admin.ModelAdmin):
+	list_display = ('id', 'description', 'is_active', 'created_at', 'updated_at')
+	list_editable = ('is_active',)
+	list_filter = ('is_active',)
+	readonly_fields = ('created_at', 'updated_at')
+

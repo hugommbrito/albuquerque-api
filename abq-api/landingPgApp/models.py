@@ -248,6 +248,7 @@ class SiteImages(models.Model):
     ABOUT_US = "about_us", "Nossa História"
     YOUR_DREAMS = "your_dreams", "Seus Sonhos"
     BLOG = "blog", "Blog"
+    SERVICE_SOLICITATION = "service_solicitation", "Solicitação de Serviços"
 
   image = models.ImageField(storage=S3Boto3Storage(), upload_to=site_image_upload_to, verbose_name="Imagem")
   description = models.CharField(max_length=200, blank=True, verbose_name="Descrição")
@@ -357,3 +358,20 @@ class Ebook(models.Model):
 
   def __str__(self):
     return self.title
+  
+class ServiceSolicitationTerm(models.Model):
+  description = models.CharField(max_length=80, verbose_name='Descrição')
+  text = CKEditor5Field('Texto do Termo', config_name='extends')
+  is_active = models.BooleanField(default=True, verbose_name='Texto Ativo?')
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def save(self, *args, **kargs):
+    if self.is_active:
+      ServiceSolicitationTerm.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+    super().save(*args,**kargs)
+
+  class Meta:
+    verbose_name = 'Termo de Solicitação de Serviço'
+    verbose_name_plural = 'Termos de Solicitação de Serviço'
