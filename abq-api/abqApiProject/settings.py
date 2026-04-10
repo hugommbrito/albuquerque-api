@@ -110,7 +110,7 @@ ASGI_APPLICATION = "abqApiProject.asgi.application"
 
 
 # Database
-load_dotenv()
+load_dotenv(BASE_DIR.parent / ".env")
 database_url = os.getenv("DATABASE_URL", "")
 
 if isinstance(database_url, bytes):
@@ -200,6 +200,7 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
 EMAIL_HOST_USER = DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "30"))
+EMAIL_RECIPIENT_LIST = [e.strip() for e in os.getenv("EMAIL_RECIPIENT_LIST", "").split(",") if e.strip()]
 
 # Se SSL estiver ativo, desabilita TLS para evitar conflito.
 if EMAIL_USE_SSL:
