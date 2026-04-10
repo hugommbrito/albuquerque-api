@@ -350,7 +350,7 @@ def service_solicitation_term(request):
         "desktop_cover_image_url": service_solicitation_page_desktop_cover_image.image.url if service_solicitation_page_desktop_cover_image else None,
         "mobile_cover_image_url": service_solicitation_page_mobile_cover_image.image.url if service_solicitation_page_mobile_cover_image else None,
         "terms_text": term.text,
-        "ventures": [venture.name for venture in ventures],
+        "ventures": [{"id": venture.id, "name": venture.name} for venture in ventures],
     }
 
     return JsonResponse(data=data)
