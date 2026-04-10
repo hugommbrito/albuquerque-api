@@ -22,4 +22,8 @@ urlpatterns = [
     path("your-dreams", views.Your_dreams_page, name="your_dreams_page_no_slash"),
     path("send-email/", views.send_message_email, name="send_email"),
     path("send-email", views.send_message_email, name="send_email_no_slash"),
+    path("service-solicitation/", views.service_solicitation_term, name="service_solicitation_term"),
+    path("service-solicitation", views.service_solicitation_term, name="service_solicitation_term_no_slash"),
+    path("send-service-solicitation/", views.send_service_solicitation_email, name="send_service_solicitation_email"),
+    path("send-service-solicitation", views.send_service_solicitation_email, name="send_service_solicitation_email_no_slash"),
 ]

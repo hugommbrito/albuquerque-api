@@ -7,8 +7,8 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import BlogArticle, Ebook, InstructionalVideo, SiteImages, Venture, VentureStatus
-from .forms import EmailMessageForm
+from .models import BlogArticle, Ebook, InstructionalVideo, ServiceSolicitationTerm, SiteImages, Venture, VentureStatus
+from .forms import EmailMessageForm, EmailServiceSolicitationForm
 
 
 def Ventures_page(request):
@@ -321,10 +321,81 @@ def send_message_email(request):
                 subject=f"[CONTATO VIA SITE] Mensagem de {name}",
                 message=f"Nome: {name}\nTelefone: {phone}\nMensagem: {message}",
                 from_email=settings.EMAIL_HOST_USER or None,
-                recipient_list=["eu@hugobrito.dev.br", "caue@albuquerqueengenharia.net"],
+                recipient_list=settings.EMAIL_RECIPIENT_LIST,
             )
 
             return JsonResponse({"success": "Message sent successfully"})
+        else:
+            return JsonResponse(
+                {"error": "Invalid form data", "details": form.errors}, status=400
+            )
+
+    return JsonResponse(
+        {"error": "Invalid request method, this endpoint only accepts POST requests"},
+        status=405,
+    )
+
+
+def service_solicitation_term(request):
+    term = ServiceSolicitationTerm.objects.filter(is_active=True).first()
+    ventures = Venture.objects.filter(is_visible=True).order_by('created_at')
+
+    service_solicitation_page_desktop_cover_image = SiteImages.objects.filter(page="service_solicitation", is_active=True, is_desktop=True).first()
+    service_solicitation_page_mobile_cover_image = SiteImages.objects.filter(page="service_solicitation", is_active=True, is_mobile=True).first()
+
+    if term is None:
+        return JsonResponse({"error": "No active term found"}, status=404)
+    
+    data = {
+        "desktop_cover_image_url": service_solicitation_page_desktop_cover_image.image.url if service_solicitation_page_desktop_cover_image else None,
+        "mobile_cover_image_url": service_solicitation_page_mobile_cover_image.image.url if service_solicitation_page_mobile_cover_image else None,
+        "terms_text": term.text,
+        "ventures": [venture.name for venture in ventures],
+    }
+
+    return JsonResponse(data=data)
+
+@csrf_exempt
+def send_service_solicitation_email(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+        except:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        form = EmailServiceSolicitationForm(data)
+        if form.is_valid():
+            venture = form.cleaned_data["venture"]
+            unit = form.cleaned_data["unit"]
+            name = form.cleaned_data["name"]
+            document = form.cleaned_data["document"]
+            phone = form.cleaned_data["phone"]
+            email = form.cleaned_data["email"]
+            description = form.cleaned_data["description"]
+            accepted_terms = form.cleaned_data["accepted_terms"]
+
+            send_mail(
+                subject=f"Nova solicitação de serviço para empreendimento {venture}",
+                message=(
+                    f"Olá!\n\n"
+                    f"Você recebeu uma nova solicitação de serviço pelo site. Veja os detalhes abaixo:\n\n"
+                    f"  Empreendimento: {venture}\n"
+                    f"  Unidade: {unit}\n\n"
+                    f"  Nome: {name}\n"
+                    f"  Documento (CPF/CNPJ): {document}\n"
+                    f"  Telefone: {phone}\n"
+                    f"  E-mail: {email}\n\n"
+                    f"  Descrição do serviço solicitado:\n"
+                    f"  {description}\n\n"
+                    f"  Aceitou os termos: {'Sim' if accepted_terms else 'Não'}\n\n"
+                    f"Entre em contato com o cliente o quanto antes!\n\n"
+                    f"— Sistema de solicitações Albuquerque Engenharia"
+                ),
+                from_email=settings.EMAIL_HOST_USER or None,
+                recipient_list=settings.EMAIL_RECIPIENT_LIST,
+            )
+
+            return JsonResponse({"success": "Service solicitation sent successfully"})
         else:
             return JsonResponse(
                 {"error": "Invalid form data", "details": form.errors}, status=400
