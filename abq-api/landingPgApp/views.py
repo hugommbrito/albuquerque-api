@@ -320,7 +320,7 @@ def send_message_email(request):
             send_mail(
                 subject=f"[CONTATO VIA SITE] Mensagem de {name}",
                 message=f"Nome: {name}\nTelefone: {phone}\nMensagem: {message}",
-                from_email=settings.EMAIL_HOST_USER or None,
+                from_email=f"Contato via Site - Albuquerque Engenharia <{settings.EMAIL_HOST_USER}>",
                 recipient_list=settings.EMAIL_RECIPIENT_LIST,
             )
 
@@ -391,7 +391,7 @@ def send_service_solicitation_email(request):
                     f"Entre em contato com o cliente o quanto antes!\n\n"
                     f"— Sistema de solicitações Albuquerque Engenharia"
                 ),
-                from_email=settings.EMAIL_HOST_USER or None,
+                from_email=f"Solicitação de Serviço via Site - Albuquerque Engenharia <{settings.EMAIL_HOST_USER}>",
                 recipient_list=settings.EMAIL_RECIPIENT_LIST,
             )
 
