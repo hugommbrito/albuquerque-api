@@ -322,6 +322,11 @@ def send_message_email(request):
                 message=f"Nome: {name}\nTelefone: {phone}\nMensagem: {message}",
                 from_email=f"Contato via Site - Albuquerque Engenharia <{settings.EMAIL_HOST_USER}>",
                 recipient_list=settings.EMAIL_RECIPIENT_LIST,
+                html_message=(
+                    f"<strong>Nome:</strong> {name}<br>"
+                    f"<strong>Telefone:</strong> {phone}<br>"
+                    f"<strong>Mensagem:</strong> {message}"
+                ),
             )
 
             return JsonResponse({"success": "Message sent successfully"})
@@ -338,7 +343,7 @@ def send_message_email(request):
 
 def service_solicitation_term(request):
     term = ServiceSolicitationTerm.objects.filter(is_active=True).first()
-    ventures = Venture.objects.filter(is_visible=True).order_by('created_at')
+    ventures = Venture.objects.filter(accepts_service_solicitation=True).order_by('created_at')
 
     service_solicitation_page_desktop_cover_image = SiteImages.objects.filter(page="service_solicitation", is_active=True, is_desktop=True).first()
     service_solicitation_page_mobile_cover_image = SiteImages.objects.filter(page="service_solicitation", is_active=True, is_mobile=True).first()
@@ -393,6 +398,27 @@ def send_service_solicitation_email(request):
                 ),
                 from_email=f"Solicitação de Serviço via Site - Albuquerque Engenharia <{settings.EMAIL_HOST_USER}>",
                 recipient_list=settings.EMAIL_RECIPIENT_LIST,
+                html_message=(
+                    f"<p>Olá!</p>"
+                    f"<p>Você recebeu uma nova solicitação de serviço pelo site. Veja os detalhes abaixo:</p>"
+                    f"<p>"
+                    f"<strong>Empreendimento:</strong> {venture}<br>"
+                    f"<strong>Unidade:</strong> {unit}"
+                    f"</p>"
+                    f"<p>"
+                    f"<strong>Nome:</strong> {name}<br>"
+                    f"<strong>Documento (CPF/CNPJ):</strong> {document}<br>"
+                    f"<strong>Telefone:</strong> {phone}<br>"
+                    f"<strong>E-mail:</strong> {email}"
+                    f"</p>"
+                    f"<p>"
+                    f"<strong>Descrição do serviço solicitado:</strong><br>"
+                    f"{description}"
+                    f"</p>"
+                    f"<p><strong>Aceitou os termos:</strong> {'Sim' if accepted_terms else 'Não'}</p>"
+                    f"<p>Entre em contato com o cliente o quanto antes!</p>"
+                    f"<p>— Sistema de solicitações Albuquerque Engenharia</p>"
+                ),
             )
 
             return JsonResponse({"success": "Service solicitation sent successfully"})
