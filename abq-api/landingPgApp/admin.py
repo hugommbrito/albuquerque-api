@@ -156,8 +156,8 @@ class VentureFloorPlanInline(admin.StackedInline):
 
 @admin.register(Venture, site=admin_site)
 class VentureAdmin(admin.ModelAdmin):
-	list_display = ('id', 'name', 'order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units', 'created_at')
-	list_editable = ('order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units')
+	list_display = ('id', 'name', 'order', 'is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units', 'accepts_service_solicitation', 'created_at')
+	list_editable = ('order', 'is_visible', 'status', 'category', 'homepage_highlight', 'accepts_service_solicitation', 'is_last_units')
 	list_filter = ('is_visible', 'status', 'category', 'homepage_highlight', 'is_last_units')
 	search_fields = ('name', 'slug', 'short_description', 'location')
 	prepopulated_fields = {'slug': ('name',)}

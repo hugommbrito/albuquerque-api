@@ -174,6 +174,7 @@ class Venture(models.Model):
   is_last_units = models.BooleanField(default=False, verbose_name='Últimas Unidades?')
   homepage_highlight = models.BooleanField(default=False, verbose_name="Destaque na Página Inicial?")
   is_visible = models.BooleanField(default=True, verbose_name="Visível?")
+  accepts_service_solicitation = models.BooleanField(default=True, verbose_name="Aceitando Assistência Técnica?")
   yt_video_id = models.CharField(max_length=50, blank=True, verbose_name="ID do Vídeo do YouTube")
   order = models.PositiveIntegerField(default=0, verbose_name="Ordem")
 
